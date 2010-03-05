@@ -1,16 +1,16 @@
-(require 'clojure.contrib.string)
+(require 'clojure.contrib.str-utils2)
 
 (defstruct neuron :threshold :factors)
 
 (defn read-config [config-file-name]
   (let [nums (map #(Double/valueOf %)
-		  (clojure.contrib.string/split-lines (slurp config-file-name)))]
+		  (clojure.contrib.str-utils2/split-lines (slurp config-file-name)))]
     (struct neuron
 	    (second nums)
 	    (take (int (first nums)) (rest (rest nums))))))
 
 (defn read-input [file-name]
-  (for [line (clojure.contrib.string/split-lines (slurp file-name))]
+  (for [line (clojure.contrib.str-utils2/split-lines (slurp file-name))]
     (map #(Integer/valueOf (str %)) line)))
 
 (defn write-file [file-name content]
