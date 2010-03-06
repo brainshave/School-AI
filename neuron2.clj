@@ -1,5 +1,5 @@
 (ns
-    #^{:author "Szymon Witamborski"
+    #^{:author "Szymon Witamborski (santamon)"
        :doc "Second, cleaner attempt to neuron program."}
   neuron2
   (:use (clojure.contrib [str-utils2 :only (split-lines)]
@@ -72,7 +72,7 @@
 
 (defn test-generation-and-reading
   "Test generation, saving and reading of .cfg and .in
-   returns [cfg-read&write-equal? in-read&write-equal?]"
+   returns [cfg-write&read-equal? in-write&read-equal?]"
   []
   (let [f "asdf-qwer"
 	nrn (generate-neuron 3 50 -100 100)
