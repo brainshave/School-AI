@@ -1,4 +1,5 @@
-(require 'clojure.contrib.str-utils2)
+(ns neuron
+  (:require clojure.contrib.str-utils2))
 
 (defstruct neuron :threshold :factors)
 

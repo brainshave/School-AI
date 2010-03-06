@@ -7,6 +7,8 @@
 
 (defstruct neuron :threshold :factors)
 
+;; READING & PROCESSING
+
 (defn read-neuron
   "Reads neuron spec from file f"
   [f]
@@ -43,6 +45,8 @@
 	   results))))
   ([nrn ins] (process-inputs (:threshold nrn) (:factors nrn) ins)))
 
+;; GENERATION
+
 (defn generate-neuron
   "Generate neuron with th threshold, n nodes randomized from fmax to fmin."
   [th n fmin fmax]
@@ -58,6 +62,8 @@
 	 (fn [] (take n (repeatedly
 			 #(rand-int 2)))))))
 
+;; SAVING
+
 (defn save-neuron&tests
   "Save neuron and t[ests] to files: f.cfg and f.in"
   [nrn t f]
@@ -69,6 +75,24 @@
 	  (reduce #(str %1 \newline %2) nums)))
   (spit (str f ".in")
 	(reduce #(str %1 \newline %2) (map #(reduce str %) t))))
+
+(defn save-ouput
+  "Save output to f.out."
+  [o f]
+  (spit (str f ".out")
+	(reduce str o)))
+
+;; GUI
+
+(defn main []
+  (println "main")
+  (doseq [arg *command-line-args*]
+    (println arg)))
+
+;; running:
+;; java -cp "C:/Java/Clojure/clojure.jar;C:/Java/Clojure-Contrib/clojure-contrib.jar;." clojure.main -e "(require 'neuron2)(neuron2/main)" neuron2.clj arg1 arg2 arg3
+
+;; TESTS
 
 (defn test-generation-and-reading
   "Test generation, saving and reading of .cfg and .in
