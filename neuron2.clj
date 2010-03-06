@@ -1,6 +1,6 @@
 (ns
     #^{:author "Szymon Witamborski (santamon)"
-       :doc "Second, cleaner attempt to neuron program with gui."}
+       :doc "Second, cleaner attempt to neuron program with Swing gui."}
   neuron2
   (:use (clojure.contrib [str-utils2 :only (split-lines)]
 			 [duck-streams :only (spit)])))
