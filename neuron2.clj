@@ -22,6 +22,11 @@
 
 ;; READING & PROCESSING
 
+(defn read-neuron-str
+  [s]
+  (struct neuron nil (map #(Double/valueOf %)
+			  (split-lines s))))
+
 (defn read-neuron
   "Reads neuron spec from file f"
   [f]
@@ -32,11 +37,14 @@
 	facs (take n (drop 2 nums))] ; rest lines are factors
     (struct neuron th facs)))
 	    
+(defn read-inputs-str
+  [s]
+  (for [line (split-lines s)]
+    (map #(Integer/valueOf(str %)) line)))
+
 (defn read-inputs
   "Reads inputs from file"
-  [f]
-  (for [line (split-lines (slurp f))]
-    (map #(Integer/valueOf(str %)) line)))
+  [f] (read-inputs-str (slurp f)))
 
 (defn process-inputs
   "Processes inputs ins for neuron nrn or give fac[tor]s and th[reshold] separetly"
@@ -133,6 +141,11 @@
 (defn main
   "Main function, if exit? then after closing window application will exit."
   ([exit?]
+     (try 
+      (doseq [laf (javax.swing.UIManager/getInstalledLookAndFeels)]
+	(when (= (.getName laf) "Nimbus")
+	  (javax.swing.UIManager/setLookAndFeel (.getClassName laf))))
+      (catch Exception e))
      (let [act-nrn (atom nil)
 	   act-tests (atom nil)
 	   spinners (reduce conj (map #(apply make-spinner %)
@@ -143,7 +156,15 @@
 				       ["fmax" 5.0 0.1]]))
      	   data-area (make-tarea)
 	   fac-area (make-tarea)
-	   run-button (make-button "Run!" #(println "run"))
+	   run-button (make-button "Run!" (fn []
+					    (let [fac (:factors (read-neuron-str
+								 (.getText fac-area)))
+						  th (.getValue (:threshold spinners))
+						  t (read-inputs-str
+						     (.getText data-area))]
+					      (.append data-area
+						       (reduce str \newline
+							       (process-inputs th fac t))))))
 	   load-button (make-button "Load" #(println "load"))
 	   save-button (make-button "Save" #(println "save"))
 	   gen-button (make-button "Generuj"
@@ -166,7 +187,7 @@
 		   (.setDefaultCloseOperation (if exit?
 						JFrame/EXIT_ON_CLOSE
 						JFrame/DISPOSE_ON_CLOSE))
-		   (.setSize 800 600))
+		   (.setSize 900 500))
 	   cpane (doto (.getContentPane frame)
 		   (.setLayout (BorderLayout. 5 5))
 		   (.add spinners-panel BorderLayout/NORTH)
