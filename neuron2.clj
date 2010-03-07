@@ -1,9 +1,22 @@
-(ns
-    #^{:author "Szymon Witamborski (santamon)"
+(ns #^{:author "Szymon Witamborski (santamon)"
        :doc "Second, cleaner attempt to neuron program with Swing gui."}
   neuron2
   (:use (clojure.contrib [str-utils2 :only (split-lines)]
-			 [duck-streams :only (spit)])))
+			 [duck-streams :only (spit)]))
+  (:import (java.awt BorderLayout
+		     Dimension
+		     Font)
+	   (javax.swing JFrame
+			JSpinner
+			SpinnerNumberModel
+			JLabel
+			JPanel
+			BoxLayout
+			JButton
+			JTextArea
+			JScrollPane)
+	   (java.awt.event ActionListener
+			   ActionEvent)))
 
 (defstruct neuron :threshold :factors)
 
@@ -64,17 +77,26 @@
 
 ;; SAVING
 
-(defn save-neuron&tests
-  "Save neuron and t[ests] to files: f.cfg and f.in"
-  [nrn t f]
+(defn str-factors [fac]
+  (reduce #(str %1 \newline %2) fac))
+
+(defn str-neuron [nrn]
   (let [th (:threshold nrn)
 	factors (:factors nrn)
 	n (count factors)
 	nums (concat [th n] factors)]
-    (spit (str f ".cfg")
-	  (reduce #(str %1 \newline %2) nums)))
+    (reduce #(str %1 \newline %2) nums)))
+
+(defn str-tests [t]
+  (reduce #(str %1 \newline %2) (map #(reduce str %) t)))
+
+(defn save-neuron&tests
+  "Save neuron and t[ests] to files: f.cfg and f.in"
+  [nrn t f]
+  (spit (str f ".cfg")
+	(str-neuron nrn))
   (spit (str f ".in")
-	(reduce #(str %1 \newline %2) (map #(reduce str %) t))))
+	(str-tests t)))
 
 (defn save-ouput
   "Save output to f.out."
@@ -84,13 +106,76 @@
 
 ;; GUI
 
-(defn main []
-  (println "main")
-  (doseq [arg *command-line-args*]
-    (println arg)))
+(defn make-spinner [name val step]
+  (let [k (keyword name)
+	k-label (keyword (str name "-label"))]
+    (sorted-map k-label (JLabel. (str " " name ":"))
+		k (let [d (Dimension. 60 30)]
+		    (doto (JSpinner. (SpinnerNumberModel. val nil nil step))
+		      (.setMinimumSize d)
+		      (.setPreferredSize d))))))
+(defn make-button [name f]
+  (doto (JButton. name)
+    (.addActionListener
+     (proxy [ActionListener] []
+       (actionPerformed [#^ActionEvent e]
+			(f))))))
 
-;; running:
-;; java -cp "C:/Java/Clojure/clojure.jar;C:/Java/Clojure-Contrib/clojure-contrib.jar;." clojure.main -e "(require 'neuron2)(neuron2/main)" neuron2.clj arg1 arg2 arg3
+(defn make-tarea [] (doto (JTextArea.)
+		       (.setFont (Font. Font/MONOSPACED Font/PLAIN 14))))
+		    
+(defn with-scrollbars [p]
+  (let [d (Dimension. 200 200)]
+  (doto (JScrollPane. p)
+    (.setMinimumSize d)
+    (.setPreferredSize d))))
+
+(defn main
+  "Main function, if exit? then after closing window application will exit."
+  ([exit?]
+     (let [act-nrn (atom nil)
+	   act-tests (atom nil)
+	   spinners (reduce conj (map #(apply make-spinner %)
+				      [["threshold" 4 1]
+				       ["n" 10 1]
+				       ["t" 80 1]
+				       ["fmin" -5.0 0.1]
+				       ["fmax" 5.0 0.1]]))
+     	   data-area (make-tarea)
+	   fac-area (make-tarea)
+	   run-button (make-button "Run!" #(println "run"))
+	   load-button (make-button "Load" #(println "load"))
+	   save-button (make-button "Save" #(println "save"))
+	   gen-button (make-button "Generuj"
+				   (fn []
+				     (let [nrn (apply generate-neuron
+						      (map #(.getValue (% spinners))
+							   [:threshold :n :fmin :fmax]))
+					   t (generate-tests
+					      nrn (.getValue (:t spinners)))]
+				       (.setText fac-area
+						 (str-factors (:factors nrn)))
+				       (.setText data-area (str-tests t))
+				       (reset! act-nrn nrn)
+				       (reset! act-tests t))))
+	   spinners-panel (doto (JPanel.)
+			    (.add run-button)
+			    (.add load-button)
+			    (.add gen-button))
+	   frame (doto (proxy [JFrame] ["ASDF"])
+		   (.setDefaultCloseOperation (if exit?
+						JFrame/EXIT_ON_CLOSE
+						JFrame/DISPOSE_ON_CLOSE))
+		   (.setSize 800 600))
+	   cpane (doto (.getContentPane frame)
+		   (.setLayout (BorderLayout. 5 5))
+		   (.add spinners-panel BorderLayout/NORTH)
+		   (.add (with-scrollbars fac-area) BorderLayout/WEST)
+		   (.add (with-scrollbars data-area) BorderLayout/CENTER))]
+       (doseq [s (reverse (vals spinners))]
+	 (.add spinners-panel s))
+       (.setVisible frame true)))
+    ([] (main true)))
 
 ;; TESTS
 
