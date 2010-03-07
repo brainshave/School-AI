@@ -88,17 +88,24 @@
 
 ;; SAVING
 
-(defn str-factors [fac]
+(defn str-factors
+  "Convert factors to string (factors are separated with new lines)"
+  [fac]
   (reduce #(str %1 \newline %2) fac))
 
-(defn str-neuron [nrn]
+(defn str-neuron
+  "Convert all data in neuron to string, for saving to a file; numbers are
+   separated with new lines"
+  [nrn]
   (let [th (:threshold nrn)
 	factors (:factors nrn)
 	n (count factors)
 	nums (concat [th n] factors)]
     (reduce #(str %1 \newline %2) nums)))
 
-(defn str-tests [t]
+(defn str-tests
+  "Make tests a string, each input separated by new line"
+  [t]
   (reduce #(str %1 \newline %2) (map #(reduce str %) t)))
 
 (defn save-neuron&tests
@@ -118,6 +125,9 @@
 ;; GUI
 
 (defn make-spinner
+  "Create spinner with label, return map with key (keyword name) for spinner
+  and key (keyword (str name \"-label\")) for label)
+  Spinner gets model made of val and stepSize step without max and min"
   ([name val step tooltip]
      (let [k (keyword name)
 	   k-label (keyword (str name "-label"))]
@@ -129,17 +139,24 @@
 			 (.setToolTipText tooltip))))))
   ([name val step] (make-spinner name val step nil)))
 
-(defn make-button [name f]
+(defn make-button
+  "Create button with label name and function f called upon click"
+  [name f]
   (doto (JButton. name)
     (.addActionListener
      (proxy [ActionListener] []
        (actionPerformed [#^ActionEvent e]
 			(f))))))
 
-(defn make-tarea [] (doto (JTextArea.)
-		      (.setFont (Font. Font/MONOSPACED Font/PLAIN 14))))
-
-(defn with-scrollbars [p]
+(defn make-tarea
+  "Create JTextArea with monospaced font"
+  []
+  (doto (JTextArea.)
+    (.setFont (Font. Font/MONOSPACED Font/PLAIN 14))))
+  
+(defn with-scrollbars
+  "Wraps panel with scrollbars, sets minimum size to 200x200"
+  [p]
   (let [d (Dimension. 200 200)]
     (doto (JScrollPane. p)
       (.setMinimumSize d)
@@ -200,7 +217,17 @@
 						name (.getText file-field)]
 					    (save-neuron&tests nrn ins name)
 					    (if out (save-output out name)))))
-		    (make-button "Load" #(println "load"))
+		    (make-button "Load"
+				 (fn []
+				   (let [name (.getText file-field)
+					 nrn (read-neuron (str name ".cfg"))
+					 ins (read-inputs (str name ".in"))]
+				     (.setValue (:threshold spinners)
+						(:threshold nrn))
+				     (.setText fac-area
+					       (str-factors (:factors nrn)))
+				     (.setText data-area
+					       (str-tests ins)))))
 		    file-field
 		    (JLabel. "{.cfg,.in} ")
 		    (make-button "Generate"
