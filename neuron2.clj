@@ -1,8 +1,8 @@
 (ns #^{:author "Szymon Witamborski (santamon)"
        :doc "Second, cleaner attempt to neuron program with Swing gui."}
   neuron2
-  (:use (clojure.contrib [str-utils2 :only (split-lines)]
-			 [duck-streams :only (spit)]))
+  (:use (clojure.contrib [string :only (split-lines)]
+			 [io :only (spit)]))
   (:import (java.awt BorderLayout
 		     Dimension
 		     Font)

@@ -1,5 +1,3 @@
 All written in Clojure, some programs will be just a bunches of undocumented functions.
 
-Should run with clojure 1.0 & 1.1, depends on clojure-contrib. Added jars for convenience.
-
 To run neuron2 program type ./neuron2.sh on UNIX-like systems and neuron.bat on Windows
