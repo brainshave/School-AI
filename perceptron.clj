@@ -108,6 +108,7 @@ Can be used for any two-dimentional collection."
   ([nrn ins] (process-inputs (:threshold nrn) (:factors nrn) ins)))
 
 (defn process-neurons
+  "map process-neuron for all nrns"
   [nrns t]
   (map #(process-neuron % t) nrns))
 
@@ -167,6 +168,7 @@ Can be used for any two-dimentional collection."
 			(f))))))
 
 (defn make-buttons
+  "Make buttons for each pair of key and value"
   [& kvals]
   (map #(apply make-button %) (partition 2 kvals)))
 
@@ -197,6 +199,8 @@ Every paramater can be nil"
 	(if out (.setText out ((dummy-f encoder) in-result)))))))
 
 (defn pipe-map-fn
+  "Create a pipe-fn with multiple decoder inputs pairs.
+f must have dec-ins arity."
   [#^JTextComponent out encoder f & dec-ins]
   (pipe-fn nil nil
 	   (fn [] (apply f (map (fn [[decoder in]] (decoder (.getText in)))
@@ -204,11 +208,14 @@ Every paramater can be nil"
 	   encoder out))
 
 (defn pipe-fn-multi
+  "Create a pipe-fn that takes text from each of areas,
+applies f on that text and writes back to that area."
   [f & areas]
   (fn [] (doseq [a areas]
 	   ((pipe-fn a nil f #(apply str %) a)))))
 
 (defn make-split
+  "Create equaly-splitted JSplitPane with areas added."
   [vertical? & areas]
   (let [sp (doto (JSplitPane. (if vertical?
 				JSplitPane/VERTICAL_SPLIT
@@ -218,6 +225,8 @@ Every paramater can be nil"
     sp))
 
 (defn make-gen-fn
+  "Create fn that generates neurons and tests with parameters from spinners
+:threshold, :n, :fmin, :fmax, :t and writes it to nrns-area and test-area"
   [spinners nrns-area test-area]
   (fn [] (let [specs (map #(.getValue (% spinners)) [:threshold :n :fmin :fmax])
 	       nrns (apply gen-neurons (.getValue (:nrns spinners)) specs)
@@ -229,6 +238,7 @@ Every paramater can be nil"
 (def chooser (JFileChooser.))
 
 (defn choose-file
+  "Open chooser for opening or saving"
   [parent open?]
   (let [;;chooser (JFileChooser.)
 	status (if open?
@@ -238,11 +248,13 @@ Every paramater can be nil"
       (.getAbsolutePath (.getSelectedFile chooser)))))
 
 (defn make-open-fn
+  "Create function that opens file chooser and writes file content to text area"
   [parent tarea]
   #(if-let [fpath (choose-file parent true)]
      (.setText tarea (slurp fpath))))
 
 (defn make-save-fn
+  "Create function that saves text from text area."
   [parent tarea]
   #(if-let [fpath (choose-file parent false)]
      (spit fpath (.getText tarea))))
@@ -259,7 +271,7 @@ Every paramater can be nil"
 		   (.setDefaultCloseOperation (if exit?
 						JFrame/EXIT_ON_CLOSE
 						JFrame/DISPOSE_ON_CLOSE))
-		   (.setSize 800 600))
+		   (.setSize 900 600))
 	   nrns-area (make-tarea)
 	   test-area (make-tarea)
 	   result-area (make-tarea)
@@ -285,5 +297,3 @@ Every paramater can be nil"
 		   (concat buttons (reverse (vals spinners)))))
        (.setVisible frame true)))
   ([] (main true)))
-	   
-	   
