@@ -105,7 +105,7 @@ Can be used for any two-dimentional collection."
 				0)
 			  1 0)))
 	   results))))
-  ([nrn ins] (process-inputs (:threshold nrn) (:factors nrn) ins)))
+  ([nrn ins] (process-neuron (:threshold nrn) (:factors nrn) ins)))
 
 (defn process-neurons
   "map process-neuron for all nrns"
