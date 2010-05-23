@@ -21,10 +21,11 @@
 
 (defn new-node
   "wejscie neuronu"
-  []
-  [:spinner {:groups []
-	     :model [SpinnerNumberModel {:params [(rand 10) -20.0 20.0 0.1] }]}])
-
+  ([range]
+     [:spinner {:groups []
+		:model [SpinnerNumberModel {:params [(rand range) -99.0 99.0 0.1] }]}])
+  ([] (new-node 5)))
+  
 (defn new-neuron
   [number node-amount]
   (concat
@@ -32,7 +33,7 @@
 	 :groups [(neuron-key number)]
 	 :constraint (str "neuron " number)}
     [:label {:text "Th: "}]
-    (new-node)
+    (new-node 15)
     [:label {:text "in: "}]]
    (for [node (range (dec node-amount))]
      (new-node))))
@@ -113,7 +114,7 @@
 	 :params [BoxLayout/X_AXIS]}
     [:label {:text "Wejścia: "}]]
    (for [in (range inputs)]
-     [:toggle-button {:text " "
+     [:toggle-button {:text (str in)
 		      :groups [:inputs]}])
    
    [[:button {:text "Odpal"
@@ -128,7 +129,7 @@
 	 :params [BoxLayout/X_AXIS]}
     [:label {:text "Wyjścia: "}]]
    (for [out (range outputs)]
-     [:toggle-button {:text " "
+     [:toggle-button {:text (str out)
 		      :groups [:outputs]}])
    [[:button {:text "Dodaj wastwę"
 	      :onmcc add-row}]]))
