@@ -1,6 +1,7 @@
 (ns #^{:author "Szymon Witamborski"
        :doc "Neurotic Network"}
   neuronet
+  (:use (perceptron))
   (:import (java.awt BorderLayout
 		     Dimension
 		     Font)
